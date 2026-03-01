@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Monitor — Simulate Readings</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand"><span class="icon">🏭</span> FACTORYMON</a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="simulate.html" class="active">Simulate</a>
+    <a href="eventlog.html">Event Log</a>
+  </div>
+  <div class="nav-status">
+    <div class="pulse" id="conn-pulse"></div>
+    <span id="conn-status">CONNECTING...</span>
+  </div>
+</nav>
+
+<div id="toast-container"></div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">SENSOR <span>SIMULATOR</span></div>
+      <div class="page-subtitle">MODULE 1 — MACHINE EVENT CAPTURE · TRIGGER TEMPERATURE READINGS MANUALLY</div>
+    </div>
+  </div>
+
+  <!-- How it works info -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div class="panel-header"><span class="panel-title">How This Works</span></div>
+    <div class="panel-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem">
+      <div style="text-align:center;padding:1rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">1️⃣</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim)">Click a reading button below</div>
+      </div>
+      <div style="text-align:center;padding:1rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">2️⃣</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim)">Fetch API sends JSON to post_event.php</div>
+      </div>
+      <div style="text-align:center;padding:1rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">3️⃣</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim)">PHP detects fault, saves to MySQL</div>
+      </div>
+      <div style="text-align:center;padding:1rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">4️⃣</div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim)">SSE stream pushes to ALL dashboards instantly</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LINE A -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div class="panel-header">
+      <span class="panel-title" style="color:var(--lineA)">⬡ LINE A — SIMULATION</span>
+    </div>
+    <div class="sim-panel">
+      <div class="sim-grid">
+
+        <div class="sim-machine">
+          <div class="sim-label">M1 — Compressor A1 (Max: 85°C)</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">Send a temperature reading:</div>
+          <div class="sim-controls">
+            <button class="sim-btn normal" data-sim data-machine="M1" data-temp="65">65°C ✓</button>
+            <button class="sim-btn normal" data-sim data-machine="M1" data-temp="72">72°C ✓</button>
+            <button class="sim-btn warning" data-sim data-machine="M1" data-temp="87">87°C ⚠</button>
+            <button class="sim-btn critical" data-sim data-machine="M1" data-temp="96">96°C 🚨</button>
+          </div>
+        </div>
+
+        <div class="sim-machine">
+          <div class="sim-label">M2 — Conveyor A2 (Max: 80°C)</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">Send a temperature reading:</div>
+          <div class="sim-controls">
+            <button class="sim-btn normal" data-sim data-machine="M2" data-temp="55">55°C ✓</button>
+            <button class="sim-btn normal" data-sim data-machine="M2" data-temp="68">68°C ✓</button>
+            <button class="sim-btn warning" data-sim data-machine="M2" data-temp="82">82°C ⚠</button>
+            <button class="sim-btn critical" data-sim data-machine="M2" data-temp="93">93°C 🚨</button>
+          </div>
+        </div>
+
+        <div class="sim-machine">
+          <div class="sim-label">M3 — Hydraulic Press A3 (Max: 90°C)</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">Send a temperature reading:</div>
+          <div class="sim-controls">
+            <button class="sim-btn normal" data-sim data-machine="M3" data-temp="70">70°C ✓</button>
+            <button class="sim-btn normal" data-sim data-machine="M3" data-temp="80">80°C ✓</button>
+            <button class="sim-btn warning" data-sim data-machine="M3" data-temp="92">92°C ⚠</button>
+            <button class="sim-btn critical" data-sim data-machine="M3" data-temp="105">105°C 🚨</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- LINE B -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div class="panel-header">
+      <span class="panel-title" style="color:var(--lineB)">⬡ LINE B — SIMULATION</span>
+    </div>
+    <div class="sim-panel">
+      <div class="sim-grid">
+
+        <div class="sim-machine">
+          <div class="sim-label">M4 — Compressor B1 (Max: 85°C)</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">Send a temperature reading:</div>
+          <div class="sim-controls">
+            <button class="sim-btn normal" data-sim data-machine="M4" data-temp="63">63°C ✓</button>
+            <button class="sim-btn normal" data-sim data-machine="M4" data-temp="74">74°C ✓</button>
+            <button class="sim-btn warning" data-sim data-machine="M4" data-temp="86">86°C ⚠</button>
+            <button class="sim-btn critical" data-sim data-machine="M4" data-temp="98">98°C 🚨</button>
+          </div>
+        </div>
+
+        <div class="sim-machine">
+          <div class="sim-label">M5 — Conveyor B2 (Max: 80°C)</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">Send a temperature reading:</div>
+          <div class="sim-controls">
+            <button class="sim-btn normal" data-sim data-machine="M5" data-temp="58">58°C ✓</button>
+            <button class="sim-btn normal" data-sim data-machine="M5" data-temp="71">71°C ✓</button>
+            <button class="sim-btn warning" data-sim data-machine="M5" data-temp="83">83°C ⚠</button>
+            <button class="sim-btn critical" data-sim data-machine="M5" data-temp="94">94°C 🚨</button>
+          </div>
+        </div>
+
+        <div class="sim-machine">
+          <div class="sim-label">M6 — Hydraulic Press B3 (Max: 90°C)</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);margin-bottom:8px">Send a temperature reading:</div>
+          <div class="sim-controls">
+            <button class="sim-btn normal" data-sim data-machine="M6" data-temp="75">75°C ✓</button>
+            <button class="sim-btn normal" data-sim data-machine="M6" data-temp="83">83°C ✓</button>
+            <button class="sim-btn warning" data-sim data-machine="M6" data-temp="93">93°C ⚠</button>
+            <button class="sim-btn critical" data-sim data-machine="M6" data-temp="108">108°C 🚨</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Response log -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Server Response Log</span>
+      <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">PHP RESPONSE FROM post_event.php</span>
+    </div>
+    <div id="response-log" style="padding:1rem 1.5rem;font-family:var(--font-mono);font-size:0.8rem;min-height:80px;color:var(--text-dim)">
+      Click any button above to send a reading...
+    </div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+<script>
+  // Override sim buttons to also show response
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-sim]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const log = document.getElementById('response-log');
+        const machine = btn.dataset.machine;
+        const temp = btn.dataset.temp;
+        log.innerHTML = `<span style="color:var(--accent)">→ Sending ${temp}°C from ${machine} to post_event.php...</span>`;
+
+        const MACHINES_LOCAL = [
+          { id:'M1', name:'Compressor A1',     line:'A', threshold:85 },
+          { id:'M2', name:'Conveyor A2',       line:'A', threshold:80 },
+          { id:'M3', name:'Hydraulic Press A3',line:'A', threshold:90 },
+          { id:'M4', name:'Compressor B1',     line:'B', threshold:85 },
+          { id:'M5', name:'Conveyor B2',       line:'B', threshold:80 },
+          { id:'M6', name:'Hydraulic Press B3',line:'B', threshold:90 },
+        ];
+
+        const m = MACHINES_LOCAL.find(x => x.id === machine);
+        const res = await fetch('backend/post_event.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ machine_id: m.id, machine_name: m.name, line: m.line, sensor_value: parseFloat(temp), threshold_max: m.threshold })
+        });
+        const data = await res.json();
+        const color = data.status === 'critical' ? 'var(--critical)' : data.status === 'warning' ? 'var(--warning)' : 'var(--normal)';
+        log.innerHTML = `
+          <span style="color:var(--normal)">✓ Event saved to MySQL</span><br>
+          <span style="color:${color}">STATUS: ${(data.status||'').toUpperCase()}  |  EVENT ID: #${data.id}  |  FAULT: ${data.fault ? 'YES ⚠' : 'NO'}</span><br>
+          <span style="color:var(--text-dim)">→ SSE stream will now push this to all connected dashboards...</span>
+        `;
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Machine Monitor — Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <span class="icon">🏭</span> FACTORYMON
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Dashboard</a>
+    <a href="simulate.html">Simulate</a>
+    <a href="eventlog.html">Event Log</a>
+  </div>
+  <div class="nav-status">
+    <div class="pulse" id="conn-pulse"></div>
+    <span id="conn-status">CONNECTING...</span>
+  </div>
+</nav>
+
+<!-- ── TOAST CONTAINER ── -->
+<div id="toast-container"></div>
+
+<!-- ── PAGE ── -->
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">FACTORY <span>FLOOR</span> MONITOR</div>
+      <div class="page-subtitle">REAL-TIME TEMPERATURE SYNCHRONIZATION ENGINE · 2 PRODUCTION LINES · 6 MACHINES</div>
+    </div>
+    <div class="controls">
+      <div class="line-filter">
+        <button class="btn active" data-line-filter="all">ALL LINES</button>
+        <button class="btn" data-line-filter="A" style="border-color:var(--lineA);color:var(--lineA)">LINE A</button>
+        <button class="btn" data-line-filter="B" style="border-color:var(--lineB);color:var(--lineB)">LINE B</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Readings</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-unit">EVENTS RECORDED</div>
+    </div>
+    <div class="stat-card critical">
+      <div class="stat-label">Fault Events</div>
+      <div class="stat-value" id="stat-faults">0</div>
+      <div class="stat-unit">THRESHOLD BREACHES</div>
+    </div>
+    <div class="stat-card normal">
+      <div class="stat-label">Line A Status</div>
+      <div class="stat-value" style="font-size:1.4rem" id="stat-lineA">OK</div>
+      <div class="stat-unit">COMPRESSOR · CONVEYOR · PRESS</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--lineB)">
+      <div class="stat-label">Line B Status</div>
+      <div class="stat-value" style="font-size:1.4rem" id="stat-lineB">OK</div>
+      <div class="stat-unit">COMPRESSOR · CONVEYOR · PRESS</div>
+    </div>
+  </div>
+
+  <!-- Machine Cards -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div class="panel-header">
+      <span class="panel-title">Machine Status — Live</span>
+      <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim)">AUTO-UPDATES VIA SSE STREAM</span>
+    </div>
+    <div class="machines-grid">
+
+      <!-- LINE A -->
+      <div class="machine-card status-normal" id="machine-M1">
+        <div class="machine-header">
+          <div>
+            <div class="machine-name">Compressor A1</div>
+            <div class="machine-id">ID: M1 · THRESHOLD: 85°C</div>
+          </div>
+          <span class="status-badge badge-normal">NORMAL</span>
+        </div>
+        <div class="temp-display">
+          <span class="temp-value">--</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-bar-wrap"><div class="temp-bar" style="width:0%"></div></div>
+        <div class="temp-limits"><span>0°C</span><span>MAX: 85°C</span></div>
+        <span class="line-tag line-A">LINE A</span>
+      </div>
+
+      <div class="machine-card status-normal" id="machine-M2">
+        <div class="machine-header">
+          <div>
+            <div class="machine-name">Conveyor A2</div>
+            <div class="machine-id">ID: M2 · THRESHOLD: 80°C</div>
+          </div>
+          <span class="status-badge badge-normal">NORMAL</span>
+        </div>
+        <div class="temp-display">
+          <span class="temp-value">--</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-bar-wrap"><div class="temp-bar" style="width:0%"></div></div>
+        <div class="temp-limits"><span>0°C</span><span>MAX: 80°C</span></div>
+        <span class="line-tag line-A">LINE A</span>
+      </div>
+
+      <div class="machine-card status-normal" id="machine-M3">
+        <div class="machine-header">
+          <div>
+            <div class="machine-name">Hydraulic Press A3</div>
+            <div class="machine-id">ID: M3 · THRESHOLD: 90°C</div>
+          </div>
+          <span class="status-badge badge-normal">NORMAL</span>
+        </div>
+        <div class="temp-display">
+          <span class="temp-value">--</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-bar-wrap"><div class="temp-bar" style="width:0%"></div></div>
+        <div class="temp-limits"><span>0°C</span><span>MAX: 90°C</span></div>
+        <span class="line-tag line-A">LINE A</span>
+      </div>
+
+      <!-- LINE B -->
+      <div class="machine-card status-normal" id="machine-M4">
+        <div class="machine-header">
+          <div>
+            <div class="machine-name">Compressor B1</div>
+            <div class="machine-id">ID: M4 · THRESHOLD: 85°C</div>
+          </div>
+          <span class="status-badge badge-normal">NORMAL</span>
+        </div>
+        <div class="temp-display">
+          <span class="temp-value">--</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-bar-wrap"><div class="temp-bar" style="width:0%"></div></div>
+        <div class="temp-limits"><span>0°C</span><span>MAX: 85°C</span></div>
+        <span class="line-tag line-B">LINE B</span>
+      </div>
+
+      <div class="machine-card status-normal" id="machine-M5">
+        <div class="machine-header">
+          <div>
+            <div class="machine-name">Conveyor B2</div>
+            <div class="machine-id">ID: M5 · THRESHOLD: 80°C</div>
+          </div>
+          <span class="status-badge badge-normal">NORMAL</span>
+        </div>
+        <div class="temp-display">
+          <span class="temp-value">--</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-bar-wrap"><div class="temp-bar" style="width:0%"></div></div>
+        <div class="temp-limits"><span>0°C</span><span>MAX: 80°C</span></div>
+        <span class="line-tag line-B">LINE B</span>
+      </div>
+
+      <div class="machine-card status-normal" id="machine-M6">
+        <div class="machine-header">
+          <div>
+            <div class="machine-name">Hydraulic Press B3</div>
+            <div class="machine-id">ID: M6 · THRESHOLD: 90°C</div>
+          </div>
+          <span class="status-badge badge-normal">NORMAL</span>
+        </div>
+        <div class="temp-display">
+          <span class="temp-value">--</span><span class="temp-unit">°C</span>
+        </div>
+        <div class="temp-bar-wrap"><div class="temp-bar" style="width:0%"></div></div>
+        <div class="temp-limits"><span>0°C</span><span>MAX: 90°C</span></div>
+        <span class="line-tag line-B">LINE B</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Chart + Event Log -->
+  <div class="grid-2">
+
+    <!-- Temperature Chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Temperature Chart</span>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+          <button class="btn active" data-chart-machine="M1" style="padding:4px 10px;font-size:0.75rem">M1</button>
+          <button class="btn" data-chart-machine="M2" style="padding:4px 10px;font-size:0.75rem">M2</button>
+          <button class="btn" data-chart-machine="M3" style="padding:4px 10px;font-size:0.75rem">M3</button>
+          <button class="btn" data-chart-machine="M4" style="padding:4px 10px;font-size:0.75rem">M4</button>
+          <button class="btn" data-chart-machine="M5" style="padding:4px 10px;font-size:0.75rem">M5</button>
+          <button class="btn" data-chart-machine="M6" style="padding:4px 10px;font-size:0.75rem">M6</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-container">
+          <canvas id="tempChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Event Log -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Live Event Stream</span>
+        <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">NEWEST FIRST</span>
+      </div>
+      <div class="event-log" id="event-log"></div>
+    </div>
+
+  </div>
+
+</div><!-- /page -->
+
+<script src="js/app.js"></script>
+</body>
+</html>

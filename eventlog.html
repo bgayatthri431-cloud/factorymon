@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factory Monitor — Event Log</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    .filter-bar { display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .filter-bar select {
+      background: var(--bg2); border: 1px solid var(--border); color: var(--text);
+      font-family: var(--font-mono); font-size: 0.8rem; padding: 6px 12px;
+      border-radius: 2px; outline: none; cursor: pointer;
+    }
+    .log-table { width:100%; border-collapse: collapse; }
+    .log-table th {
+      background: var(--bg3); color: var(--accent); font-family: var(--font-mono);
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px;
+      padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .log-table td {
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 0.78rem; color: var(--text);
+    }
+    .log-table tr:hover td { background: var(--bg3); }
+    .log-table tr.fault td   { border-left: 3px solid var(--critical); }
+    .log-table tr.warning td { border-left: 3px solid var(--warning); }
+    .log-table tr.normal td  { border-left: 3px solid var(--normal); }
+    .pagination { display:flex; gap:0.5rem; justify-content:center; padding:1rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand"><span class="icon">🏭</span> FACTORYMON</a>
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="simulate.html">Simulate</a>
+    <a href="eventlog.html" class="active">Event Log</a>
+  </div>
+  <div class="nav-status">
+    <div class="pulse" id="conn-pulse"></div>
+    <span id="conn-status">LIVE</span>
+  </div>
+</nav>
+
+<div id="toast-container"></div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">EVENT <span>LOG</span></div>
+      <div class="page-subtitle">MODULE 6 — SHIFT LOG RECORDER · COMPLETE HISTORY OF ALL MACHINE EVENTS</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <select id="filter-line">
+      <option value="">All Lines</option>
+      <option value="A">Line A</option>
+      <option value="B">Line B</option>
+    </select>
+    <select id="filter-status">
+      <option value="">All Status</option>
+      <option value="normal">Normal</option>
+      <option value="warning">Warning</option>
+      <option value="critical">Critical</option>
+    </select>
+    <select id="filter-limit">
+      <option value="25">25 rows</option>
+      <option value="50" selected>50 rows</option>
+      <option value="100">100 rows</option>
+    </select>
+    <button class="btn" id="apply-filter">APPLY FILTERS</button>
+    <button class="btn" id="refresh-log">REFRESH</button>
+  </div>
+
+  <!-- Table -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Machine Event History</span>
+      <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)" id="row-count">Loading...</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>Time</th>
+            <th>Machine</th>
+            <th>Line</th>
+            <th>Temperature</th>
+            <th>Status</th>
+            <th>Event Type</th>
+            <th>Threshold</th>
+          </tr>
+        </thead>
+        <tbody id="log-tbody">
+          <tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:2rem">Loading events...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+<script>
+  const loadLog = async () => {
+    const line   = document.getElementById('filter-line').value;
+    const status = document.getElementById('filter-status').value;
+    const limit  = document.getElementById('filter-limit').value;
+
+    let url = `backend/get_events.php?action=events&limit=${limit}`;
+    if (line)   url += `&line=${line}`;
+
+    const res  = await fetch(url);
+    const data = await res.json();
+
+    let events = data.events;
+    if (status) events = events.filter(e => e.status === status);
+
+    document.getElementById('row-count').textContent = `${events.length} RECORDS`;
+
+    const tbody = document.getElementById('log-tbody');
+    if (!events.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:2rem">No events found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = events.map(e => `
+      <tr class="${e.event_type === 'fault' ? 'fault' : e.status}">
+        <td style="color:var(--text-dim)">#${e.id}</td>
+        <td>${new Date(e.created_at).toLocaleString()}</td>
+        <td style="color:var(--accent)">${e.machine_name}</td>
+        <td><span class="line-tag line-${e.line}">LINE ${e.line}</span></td>
+        <td style="color:#fff;font-weight:600">${parseFloat(e.sensor_value).toFixed(1)}°C</td>
+        <td><span class="status-badge badge-${e.status}">${e.status.toUpperCase()}</span></td>
+        <td style="color:${e.event_type === 'fault' ? 'var(--critical)' : 'var(--text-dim)'}">${e.event_type.toUpperCase()}</td>
+        <td style="color:var(--text-dim)">${parseFloat(e.threshold_max).toFixed(0)}°C</td>
+      </tr>
+    `).join('');
+  };
+
+  document.getElementById('apply-filter').addEventListener('click', loadLog);
+  document.getElementById('refresh-log').addEventListener('click', loadLog);
+  document.addEventListener('DOMContentLoaded', loadLog);
+</script>
+</body>
+</html>
