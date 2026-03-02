@@ -1,20 +1,14 @@
 <?php
-// ── DB Configuration ─────────────────────────────────────
-// Uses Railway environment variables in production
-// Falls back to XAMPP defaults for local development
 
-$host = getenv('MYSQLHOST')     ?: 'localhost';
-$db   = getenv('MYSQLDATABASE') ?: 'factory_monitor';
-$user = getenv('MYSQLUSER')     ?: 'root';
-$pass = getenv('MYSQLPASSWORD') ?: '';
-$port = getenv('MYSQLPORT')     ?: 3306;
+$host = getenv('DB_HOST');
+$user = getenv('DB_USER');
+$pass = getenv('DB_PASS');
+$db   = getenv('DB_NAME');
+$port = getenv('DB_PORT');
 
-$conn = new mysqli($host, $user, $pass, $db, (int)$port);
+$conn = new mysqli($host, $user, $pass, $db, $port);
 
 if ($conn->connect_error) {
-    http_response_code(500);
-    die(json_encode(['error' => 'Database connection failed: ' . $conn->connect_error]));
+    die("DB Connection Failed: " . $conn->connect_error);
 }
-
-$conn->set_charset('utf8mb4');
 ?>
