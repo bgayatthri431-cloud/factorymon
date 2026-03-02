@@ -1,7 +1,0 @@
-{
-  "name": "factorymon/app",
-  "description": "Factory Machine Monitor",
-  "require": {
-    "php": ">=8.0"
-  }
-}
